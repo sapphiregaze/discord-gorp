@@ -2,11 +2,12 @@ package config
 
 import (
 	"fmt"
-	"log/slog"
 	"os"
 	"path/filepath"
 
 	"github.com/spf13/viper"
+
+	"github.com/sapphiregaze/discord-gorp/pkg/logger"
 )
 
 type Timestamp struct {
@@ -88,7 +89,7 @@ func Load() (*Config, error) {
 			return nil, err
 		}
 
-		slog.Info(fmt.Sprintf("Config file not found. Copying example config to: %s", configPath))
+		logger.Info(fmt.Sprintf("Config file not found. Copying example config to: %s...", configPath))
 		if err := copy(filepath.Join(currentDir, "configs/config.example.yaml"), configPath); err != nil {
 			return nil, fmt.Errorf("failed to copy example config: %w", err)
 		}

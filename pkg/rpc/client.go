@@ -2,13 +2,13 @@ package rpc
 
 import (
 	"encoding/json"
-	"log/slog"
 	"os"
 	"time"
 
 	"github.com/gorilla/websocket"
 
 	"github.com/sapphiregaze/discord-gorp/pkg/config"
+	"github.com/sapphiregaze/discord-gorp/pkg/logger"
 )
 
 type RPCClient struct {
@@ -30,7 +30,7 @@ func NewClient() (*RPCClient, error) {
 
 func (r *RPCClient) Close() {
 	r.conn.Close()
-	slog.Info("Disconnected from Discord RPC")
+	logger.Info("Disconnected from Discord RPC server")
 }
 
 func (r *RPCClient) SetActivity(activity *config.Activity) error {
@@ -53,7 +53,7 @@ func (r *RPCClient) SetActivity(activity *config.Activity) error {
 		return err
 	}
 
-	slog.Info("Sent activity update to Discord RPC")
+	logger.Info("Sent activity update to Discord RPC server")
 	return nil
 }
 
