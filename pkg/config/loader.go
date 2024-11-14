@@ -1,6 +1,8 @@
 package config
 
 import (
+	"fmt"
+	"log/slog"
 	"os"
 	"path/filepath"
 
@@ -53,13 +55,46 @@ type Config struct {
 	Activity Activity `mapstructure:"activity"`
 }
 
+func copy(src string, dst string) error {
+	data, err := os.ReadFile(src)
+	if err != nil {
+		return err
+	}
+
+	err = os.WriteFile(dst, data, 0644)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func Load() (*Config, error) {
-	path, err := os.UserHomeDir()
+	homeDir, err := os.UserHomeDir()
 	if err != nil {
 		return nil, err
 	}
 
-	viper.SetConfigFile(filepath.Join(path, ".config/discord-gorp/config.yaml"))
+	configDir := filepath.Join(homeDir, ".config/discord-gorp")
+	configPath := filepath.Join(configDir, "config.yaml")
+
+	if _, err := os.Stat(configPath); os.IsNotExist(err) {
+		if err := os.MkdirAll(configDir, 0755); err != nil {
+			return nil, fmt.Errorf("failed to create config directory: %w", err)
+		}
+
+		currentDir, err := os.Getwd()
+		if err != nil {
+			return nil, err
+		}
+
+		slog.Info(fmt.Sprintf("Config file not found. Copying example config to: %s", configPath))
+		if err := copy(filepath.Join(currentDir, "configs/config.example.yaml"), configPath); err != nil {
+			return nil, fmt.Errorf("failed to copy example config: %w", err)
+		}
+	}
+
+	viper.SetConfigFile(configPath)
 	if err := viper.ReadInConfig(); err != nil {
 		return nil, err
 	}
