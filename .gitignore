@@ -1,1 +1,5 @@
 .direnv
+.DS_Store
+.vscode
+
+config.yaml

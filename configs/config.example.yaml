@@ -1,0 +1,25 @@
+activity:
+  application_id: "<DISCORD_APPLICATION_ID>"
+  name: "<CUSTOM_NAME>"
+  type: 0
+  state: "<CUSTOM_STATE>"
+  details: "<CUSTOM_DETAILS>"
+  timestamp:
+    start: 0000000001
+    end: 2147483647
+  assets:
+    large_image: ""
+    large_text: ""
+    small_image: ""
+    small_text: ""
+  party:
+    id: ""
+    size: [1, 4]
+  secrets:
+    join: ""
+    spectate: ""
+    match: ""
+  buttons:
+    label: "<CUSTOM_BOTTON_LABEL>"
+    url: "<CUSTOM_BOTTON_URL>"
+  instance: true
