@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"time"
 
+	"github.com/fsnotify/fsnotify"
 	"github.com/spf13/viper"
 
 	"github.com/sapphiregaze/discord-gorp/pkg/logger"
@@ -76,7 +78,7 @@ func Load() (*Config, error) {
 		return nil, err
 	}
 
-	configDir := filepath.Join(homeDir, ".config/discord-gorp")
+	configDir := filepath.Join(homeDir, ".config", "discord-gorp")
 	configPath := filepath.Join(configDir, "config.yaml")
 
 	if _, err := os.Stat(configPath); os.IsNotExist(err) {
@@ -96,14 +98,39 @@ func Load() (*Config, error) {
 	}
 
 	viper.SetConfigFile(configPath)
+	viper.SetConfigType("yaml")
+
 	if err := viper.ReadInConfig(); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error reading config file: %w", err)
 	}
+	logger.Info(fmt.Sprintf("Initial config loaded from %s", configPath))
 
 	var config Config
 	if err := viper.Unmarshal(&config); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error unmarshalling config: %w", err)
 	}
+
+	var lastChange time.Time
+
+	viper.WatchConfig()
+	logger.Info(fmt.Sprintf("Watching for config changes at %s", configPath))
+
+	viper.OnConfigChange(func(e fsnotify.Event) {
+		// debounce mechanism to ensure only one reload happens per file change/save
+		if time.Since(lastChange) < time.Millisecond*100 {
+			return
+		}
+
+		lastChange = time.Now()
+
+		logger.Info(fmt.Sprintf("Config file changed at %s", e.Name))
+		if err := viper.Unmarshal(&config); err != nil {
+			logger.Error(fmt.Sprintf("Failed to reload config: %v", err))
+			return
+		}
+
+		logger.Info("Config reloaded successfully")
+	})
 
 	return &config, nil
 }
